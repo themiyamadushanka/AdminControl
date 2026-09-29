@@ -1,6 +1,9 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
+const fileHndle = require('./imagehandle.js');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
 app.use(cors({
     origin: 'https://omixelo.com',
     credentials: true
@@ -55,17 +58,28 @@ app.get('/api/data',(req,res)=>{
   })
 });
 
-app.post('/adds', (req, res) => {
-    const { imageURL, description} = req.body;
-    const time = new Date().toTimeString().slice(0, 8);
-    const sql = "INSERT INTO adds (imageURL, description, time) VALUES (?, ?, ?)";
-    conn.query(sql, [imageURL, description, time], (err) => {
-        if (err) {
-            console.log(err);
-            return res.status(500).send('Failed to add ad.');
+app.post('/adds', upload.single('image'), async (req, res) => {
+    try {
+        const { description } = req.body;
+        if (!req.file) {
+            return res.status(400).send('Image file is required.');
         }
-        res.redirect('/dashboard');
-    });
+
+        const imageURL = await fileHndle(req.file.buffer);
+
+        const time = new Date().toTimeString().slice(0, 8);
+        const sql = "INSERT INTO adds (imageURL, description, time) VALUES (?, ?, ?)";
+        conn.query(sql, [imageURL, description, time], (err) => {
+            if (err) {
+                console.log(err);
+                return res.status(500).send('Failed to add ad.');
+            }
+            res.redirect('/dashboard');
+        });
+    } catch (error) {
+        console.error('Error adding ad:', error.message);
+        res.status(500).send('Failed to upload image and create ad.');
+    }
 });
 
 app.post('/adds/delete/:id', (req, res) => {
