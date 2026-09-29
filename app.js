@@ -1,5 +1,7 @@
 const express = require('express');
 const app = express();
+const cors = require('cors');
+app.use(cors());
 const port = 5300;
 const conn = require('./database.js');
 app.set('view engine', 'ejs');
