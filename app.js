@@ -1,7 +1,10 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
-app.use(cors());
+app.use(cors({
+    origin: 'https://omixelo.com',
+    credentials: true
+}));
 const port = 5300;
 const conn = require('./database.js');
 app.set('view engine', 'ejs');
