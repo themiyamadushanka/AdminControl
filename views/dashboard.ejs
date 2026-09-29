@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — AdminControl</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f0f5ff;
+      min-height: 100vh;
+      color: #1e3a8a;
+    }
+
+    /* ────────── NAVBAR ────────── */
+    nav {
+      position: sticky; top: 0; z-index: 200;
+      height: 62px;
+      background: linear-gradient(90deg, #1e3a8a 0%, #2563eb 100%);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px;
+      box-shadow: 0 2px 20px rgba(29,78,216,.3);
+    }
+    .nav-left { display: flex; align-items: center; gap: 12px; }
+    .nav-logo {
+      width: 36px; height: 36px; border-radius: 9px;
+      background: rgba(255,255,255,.18);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .nav-logo svg { width: 20px; height: 20px; fill: #fff; }
+    .nav-brand h2 { font-size: .95rem; font-weight: 700; color: #fff; letter-spacing: -.02em; }
+    .nav-brand span { font-size: .65rem; color: #bfdbfe; text-transform: uppercase; letter-spacing: .08em; }
+    .nav-logout {
+      display: flex; align-items: center; gap: 6px;
+      padding: 7px 16px; border-radius: 8px;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.2);
+      color: #fff; font-size: .8rem; font-weight: 500;
+      text-decoration: none; font-family: 'Inter', sans-serif;
+      cursor: pointer; transition: background .2s;
+    }
+    .nav-logout:hover { background: rgba(255,255,255,.22); }
+    .nav-logout svg { width: 15px; height: 15px; fill: #fff; }
+
+    /* ────────── PAGE WRAPPER ────────── */
+    .page { max-width: 1160px; margin: 0 auto; padding: 36px 28px 60px; }
+
+    /* ────────── PAGE HEADER ────────── */
+    .page-top {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      flex-wrap: wrap; gap: 16px; margin-bottom: 28px;
+    }
+    .page-top h1 {
+      font-size: 1.55rem; font-weight: 800; color: #1e3a8a; letter-spacing: -.03em;
+    }
+    .page-top p { font-size: .85rem; color: #64748b; margin-top: 3px; }
+    .btn-add {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 10px 22px; border-radius: 10px; border: none;
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      color: #fff; font-size: .87rem; font-weight: 600;
+      font-family: 'Inter', sans-serif; cursor: pointer;
+      box-shadow: 0 4px 14px rgba(37,99,235,.38);
+      transition: box-shadow .2s, transform .15s;
+      white-space: nowrap;
+    }
+    .btn-add:hover { box-shadow: 0 6px 20px rgba(37,99,235,.5); transform: translateY(-1px); }
+    .btn-add svg { width: 16px; height: 16px; fill: #fff; }
+
+    /* ────────── ADD FORM PANEL ────────── */
+    .form-panel {
+      background: #fff;
+      border: 1.5px solid #dbeafe;
+      border-radius: 18px;
+      padding: 28px 32px;
+      margin-bottom: 32px;
+      box-shadow: 0 4px 24px rgba(37,99,235,.08);
+      display: none;
+    }
+    .form-panel.open {
+      display: block;
+      animation: panelIn .28s cubic-bezier(.22,1,.36,1);
+    }
+    @keyframes panelIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .form-panel-title {
+      font-size: .95rem; font-weight: 700; color: #1e3a8a;
+      margin-bottom: 22px; display: flex; align-items: center; gap: 8px;
+    }
+    .form-panel-title svg { width: 18px; height: 18px; fill: #2563eb; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media(max-width:600px) { .form-grid { grid-template-columns: 1fr; } }
+    .fg-full { grid-column: 1 / -1; }
+    .fgroup { display: flex; flex-direction: column; gap: 6px; }
+    .fgroup label { font-size: .75rem; font-weight: 600; color: #475569; letter-spacing: .01em; }
+    .finput-wrap { position: relative; }
+    .finput-ico {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      display: flex; pointer-events: none; color: #94a3b8; transition: color .18s;
+    }
+    .finput-wrap:focus-within .finput-ico { color: #2563eb; }
+    .fgroup input, .fgroup textarea {
+      width: 100%; padding: 10px 12px 10px 38px;
+      border: 1.5px solid #dbeafe; border-radius: 10px;
+      font-size: .87rem; font-family: 'Inter', sans-serif; color: #1e3a8a;
+      background: #f0f5ff; outline: none;
+      transition: border-color .18s, box-shadow .18s, background .18s;
+      resize: none;
+    }
+    .fgroup input:focus, .fgroup textarea:focus {
+      border-color: #2563eb; background: #fff;
+      box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+    }
+    .fgroup input::placeholder, .fgroup textarea::placeholder { color: #94a3b8; }
+    .form-actions { display: flex; gap: 10px; margin-top: 20px; align-items: center; }
+    .btn-post {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 22px; border: none; border-radius: 10px;
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      color: #fff; font-size: .87rem; font-weight: 600;
+      font-family: 'Inter', sans-serif; cursor: pointer;
+      box-shadow: 0 3px 10px rgba(37,99,235,.3);
+      transition: box-shadow .2s, transform .15s;
+    }
+    .btn-post:hover { box-shadow: 0 5px 16px rgba(37,99,235,.44); transform: translateY(-1px); }
+    .btn-post svg { width: 14px; height: 14px; fill: #fff; }
+    .btn-cancel-form {
+      padding: 9px 18px; border: 1.5px solid #e2e8f0; border-radius: 10px;
+      background: none; color: #64748b; font-size: .85rem; font-weight: 500;
+      font-family: 'Inter', sans-serif; cursor: pointer; transition: border-color .18s, color .18s;
+    }
+    .btn-cancel-form:hover { border-color: #94a3b8; color: #334155; }
+
+    /* ────────── STAT CHIP ────────── */
+    .stat-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 28px; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #fff; border: 1px solid #dbeafe; border-radius: 10px;
+      padding: 9px 18px; font-size: .82rem; color: #64748b;
+      box-shadow: 0 1px 4px rgba(37,99,235,.05);
+    }
+    .chip strong { font-size: 1.1rem; font-weight: 700; color: #1d4ed8; }
+    .chip svg { width: 15px; height: 15px; fill: #60a5fa; }
+
+    /* ────────── ADS GRID ────────── */
+    .listings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 22px;
+    }
+
+    /* ────────── AD CARD ────────── */
+    .listing-card {
+      background: #fff;
+      border: 1px solid #dbeafe;
+      border-radius: 18px;
+      overflow: visible;
+      box-shadow: 0 2px 12px rgba(37,99,235,.07);
+      transition: transform .2s, box-shadow .2s;
+      display: flex;
+      flex-direction: column;
+    }
+    .listing-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 32px rgba(37,99,235,.14);
+    }
+    .card-img {
+      width: 100%; height: 180px; border-radius: 18px 18px 0 0;
+      overflow: hidden; background: #eff6ff; flex-shrink: 0;
+    }
+    .card-img img {
+      width: 100%; height: 100%; object-fit: cover;
+      display: block; transition: transform .35s ease;
+    }
+    .listing-card:hover .card-img img { transform: scale(1.05); }
+    .img-placeholder {
+      width: 100%; height: 100%;
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center; gap: 8px;
+    }
+    .img-placeholder svg { width: 38px; height: 38px; fill: #bfdbfe; }
+    .img-placeholder span { font-size: .72rem; color: #94a3b8; }
+    .card-body { padding: 16px 18px; flex: 1; }
+    .card-meta {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 9px;
+    }
+    .badge {
+      font-size: .66rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .06em; color: #2563eb;
+      background: #eff6ff; border: 1px solid #bfdbfe;
+      padding: 3px 9px; border-radius: 20px;
+    }
+    .card-time {
+      display: flex; align-items: center; gap: 4px;
+      font-size: .71rem; color: #94a3b8;
+    }
+    .card-time svg { width: 11px; height: 11px; fill: #94a3b8; }
+    .card-desc {
+      font-size: .87rem; color: #475569; line-height: 1.55;
+      display: -webkit-box; -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .card-footer {
+      padding: 11px 18px 14px;
+      border-top: 1px solid #f0f5ff;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .card-id { font-size: .7rem; color: #94a3b8; font-family: monospace; }
+    .btn-del {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 14px; border-radius: 8px; border: 1.5px solid #fee2e2;
+      background: #fef2f2; color: #ef4444;
+      font-size: .77rem; font-weight: 600; font-family: 'Inter', sans-serif;
+      cursor: pointer; transition: background .18s, color .18s, border-color .18s;
+    }
+    .btn-del:hover { background: #ef4444; color: #fff; border-color: #ef4444; }
+    .btn-del svg { width: 13px; height: 13px; fill: currentColor; }
+
+    /* ────────── EMPTY STATE ────────── */
+    .empty {
+      grid-column: 1 / -1; text-align: center; padding: 64px 24px;
+      background: #fff; border-radius: 18px;
+      border: 2px dashed #bfdbfe;
+    }
+    .empty svg { width: 52px; height: 52px; fill: #bfdbfe; margin-bottom: 14px; }
+    .empty h3 { font-size: 1.05rem; font-weight: 700; color: #1e3a8a; margin-bottom: 6px; }
+    .empty p  { font-size: .83rem; color: #94a3b8; }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav>
+    <div class="nav-left">
+      <div class="nav-logo">
+        <svg viewBox="0 0 24 24"><path d="M12 2L4 6v5c0 5.25 3.4 10.15 8 11.35C16.6 21.15 20 16.25 20 11V6l-8-4z"/></svg>
+      </div>
+      <div class="nav-brand">
+        <h2>AdminControl</h2>
+        <span>Dashboard</span>
+      </div>
+    </div>
+    <a href="/login" class="nav-logout">
+      <svg viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+      Logout
+    </a>
+  </nav>
+
+  <div class="page">
+
+    <!-- PAGE HEADER -->
+    <div class="page-top">
+      <div>
+        <h1>Advertisements</h1>
+        <p>Manage and publish your ad listings</p>
+      </div>
+      <button class="btn-add" id="addBtn" onclick="toggleForm()">
+        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        Add New Ad
+      </button>
+    </div>
+
+    <!-- ADD FORM PANEL -->
+    <div class="form-panel" id="formPanel">
+      <div class="form-panel-title">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+        New Advertisement
+      </div>
+      <form action="/adds" method="POST">
+        <div class="form-grid">
+
+          <div class="fgroup fg-full">
+            <label for="adImgUrl">Image URL</label>
+            <div class="finput-wrap">
+              <span class="finput-ico">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                </svg>
+              </span>
+              <input type="text" id="adImgUrl" name="imageURL" placeholder="https://example.com/image.jpg" maxlength="255" required />
+            </div>
+          </div>
+
+
+
+          <div class="fgroup fg-full">
+            <label for="adDesc">Description</label>
+            <div class="finput-wrap">
+              <span class="finput-ico" style="top:13px;transform:none;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M14 17H4v2h10v-2zm6-8H4v2h16V9zM4 15h16v-2H4v2zM4 5v2h16V5H4z"/>
+                </svg>
+              </span>
+              <textarea id="adDesc" name="description" rows="2" placeholder="Enter ad description…" maxlength="100" required></textarea>
+            </div>
+          </div>
+
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn-post">
+            <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+            Post Ad
+          </button>
+          <button type="button" class="btn-cancel-form" onclick="toggleForm()">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- STATS -->
+    <div class="stat-row">
+      <div class="chip">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+        <strong><%= results.length %></strong> Total Ads
+      </div>
+    </div>
+
+    <!-- ADS GRID -->
+    <div class="listings-grid">
+
+      <% if (results.length === 0) { %>
+        <div class="empty">
+          <svg viewBox="0 0 24 24"><path d="M20 6h-2.18c.07-.44.18-.88.18-1.35C18 2.54 15.96.5 13.45.5c-1.4 0-2.6.67-3.45 1.67L9 3.5l-1-.83C7.15 1.67 5.95 1 4.55 1 2.04 1 0 3.04 0 5.65c0 .47.11.9.18 1.35H0L2 20h20l2-14h-4z"/></svg>
+          <h3>No ads yet</h3>
+          <p>Click "Add New Ad" above to create your first advertisement.</p>
+        </div>
+      <% } %>
+
+      <% results.forEach(function(ad) { %>
+        <div class="listing-card">
+
+          <div class="card-img">
+            <img
+              src="<%= ad.imageURL %>"
+              alt="<%= ad.description %>"
+              onload="this.style.display='block'"
+              onerror="this.style.display='none'; this.parentElement.querySelector('.img-placeholder').style.display='flex';"
+            />
+            <div class="img-placeholder">
+              <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+              <span>Image unavailable</span>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="badge">Ad</span>
+              <span class="card-time">
+                <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
+                <%= ad.time %>
+              </span>
+            </div>
+            <p class="card-desc"><%= ad.description %></p>
+          </div>
+
+          <div class="card-footer">
+            <span class="card-id">#<%= ad.my_row_id %></span>
+            <form action="/adds/delete/<%= ad.my_row_id %>" method="POST" onsubmit="return confirm('Delete this ad?')">
+              <button type="submit" class="btn-del">
+                <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                Delete
+              </button>
+            </form>
+          </div>
+
+        </div>
+      <% }); %>
+
+    </div>
+  </div>
+
+  <script>
+    function toggleForm() {
+      const panel = document.getElementById('formPanel');
+      const btn   = document.getElementById('addBtn');
+      const open  = panel.classList.toggle('open');
+      btn.innerHTML = open
+        ? `<svg viewBox="0 0 24 24" width="16" height="16" fill="#fff" style="vertical-align:middle"><path d="M19 13H5v-2h14v2z"/></svg> Close`
+        : `<svg viewBox="0 0 24 24" width="16" height="16" fill="#fff" style="vertical-align:middle"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> Add New Ad`;
+      if (open) panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  </script>
+
+</body>
+</html>
