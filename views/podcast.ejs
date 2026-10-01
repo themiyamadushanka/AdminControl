@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omixelo Admin - Podcasts</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #fafaf9;
+            min-height: 100vh;
+            color: #0f172a;
+        }
+
+        /* NAVBAR OMIXELO THEME */
+        nav {
+            position: sticky; top: 0; z-index: 200;
+            height: 70px;
+            background: #ffffff;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 32px;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+        .nav-left { display: flex; align-items: center; gap: 12px; }
+        .nav-brand { font-size: 1.3rem; font-weight: 800; color: #0f172a; letter-spacing: -0.02em; }
+        .nav-links { display: flex; align-items: center; gap: 28px; }
+        .nav-links a { text-decoration: none; color: #475569; font-weight: 500; font-size: 0.95rem; transition: color 0.2s; }
+        .nav-links a:hover { color: #0ea5e9; }
+        .nav-links .active { color: #0ea5e9; font-weight: 600; }
+        .nav-btn {
+            background: linear-gradient(135deg, #00d2ff, #0690f0);
+            color: #fff !important; padding: 8px 20px; border-radius: 99px;
+            font-weight: 600; text-decoration: none; display: inline-flex; align-items: center;
+            box-shadow: 0 4px 12px rgba(6, 144, 240, 0.3); transition: transform 0.2s;
+        }
+        .nav-btn:hover { transform: translateY(-1px); }
+
+        .dashboard-container {
+            max-width: 1160px;
+            margin: 0 auto;
+            padding: 40px 28px 60px;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .top-bar h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        
+        .top-bar p { color: #64748b; margin-top: 4px; font-size: 1rem; }
+
+        .btn-add {
+            background: linear-gradient(135deg, #00d2ff, #0690f0);
+            color: white; border: none; padding: 10px 24px; border-radius: 12px;
+            font-weight: 600; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 8px;
+            box-shadow: 0 4px 15px rgba(6, 144, 240, 0.3); transition: all 0.2s;
+        }
+
+        .btn-add:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(6, 144, 240, 0.4); }
+
+        /* Grid for podcasts */
+        .podcast-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .podcast-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 24px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+
+        .podcast-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
+
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 ratio */
+            height: 0;
+            overflow: hidden;
+            margin-bottom: 16px;
+            border-radius: 12px;
+            background: #f1f5f9;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .podcast-category {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #e0f2fe;
+            color: #0284c7;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .podcast-desc {
+            font-size: 0.95rem;
+            color: #334155;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .podcast-date {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 16px;
+            margin-top: 8px;
+        }
+
+        .delete-btn {
+            width: 100%;
+            padding: 8px;
+            margin-top: 12px;
+            background: #fef2f2;
+            color: #ef4444;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .delete-btn:hover {
+            background: #fee2e2;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.2s;
+        }
+
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+
+        .modal {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 32px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: translateY(20px) scale(0.95);
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .modal-overlay.active .modal { transform: translateY(0) scale(1); }
+
+        .close-btn {
+            position: absolute; top: 20px; right: 24px;
+            background: none; border: none; color: #94a3b8;
+            font-size: 1.5rem; cursor: pointer; transition: color 0.2s;
+        }
+
+        .close-btn:hover { color: #0f172a; }
+
+        .modal-header h2 { font-size: 1.5rem; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+        .modal-header { margin-bottom: 24px; }
+
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 6px; }
+        .form-control {
+            width: 100%; padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 10px;
+            font-size: 0.95rem; font-family: inherit; background: #fafaf9; outline: none; transition: all 0.2s;
+        }
+        .form-control:focus { border-color: #0ea5e9; background: #ffffff; box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1); }
+        textarea.form-control { resize: vertical; min-height: 100px; }
+
+        .submit-btn {
+            width: 100%; padding: 12px; margin-top: 8px;
+            background: linear-gradient(135deg, #00d2ff, #0690f0); color: white;
+            border: none; border-radius: 10px; font-size: 1rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 15px rgba(6, 144, 240, 0.3);
+        }
+        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(6, 144, 240, 0.4); }
+
+        .empty-state {
+            text-align: center; padding: 60px 20px; background: #fff;
+            border-radius: 20px; border: 2px dashed #cbd5e1; grid-column: 1 / -1;
+        }
+        .empty-state h3 { font-size: 1.2rem; color: #0f172a; margin-bottom: 8px; }
+        .empty-state p { color: #64748b; }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav>
+        <div class="nav-left">
+            <div class="nav-brand">
+                <span style="color: #0f172a;">OMIXELO</span> <span style="color: #0ea5e9; font-weight: 600;">Admin</span>
+            </div>
+        </div>
+        <div class="nav-links">
+            <a href="/dashboard">News Dashboard</a>
+            <a href="/showpodcast" class="active">Podcasts</a>
+            <a href="/login" class="nav-btn">Logout</a>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="top-bar">
+            <div>
+                <h1>Podcast Dashboard</h1>
+                <p>Manage your Omixelo educational podcasts</p>
+            </div>
+            <button class="btn-add" id="openModalBtn">
+                + Add Podcast
+            </button>
+        </div>
+
+        <div class="podcast-grid">
+            <% if (podcasts && podcasts.length > 0) { %>
+                <% podcasts.forEach(function(podcast) { %>
+                    <div class="podcast-card">
+                        <% 
+                            let embedUrl = podcast.videourl;
+                            const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+                            const match = podcast.videourl.match(ytRegex);
+                            if (match && match[1]) {
+                                embedUrl = "https://www.youtube.com/embed/" + match[1];
+                            }
+                        %>
+                        <div class="video-container">
+                            <iframe src="<%= embedUrl %>" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                        </div>
+
+                        <span class="podcast-category"><%= podcast.category %></span>
+                        <p class="podcast-desc"><%= podcast.description %></p>
+                        
+                        <div class="podcast-date">
+                            <% 
+                                let formattedDate = "Unknown Date";
+                                if (podcast.date) {
+                                    const d = new Date(podcast.date);
+                                    if (!isNaN(d.getTime())) {
+                                        formattedDate = d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                                    } else {
+                                        formattedDate = podcast.date;
+                                    }
+                                }
+                            %>
+                            Published on <%= formattedDate %>
+                        </div>
+                        
+                        <form action="/deletepodcast" method="POST">
+                            <input type="hidden" name="videourl" value="<%= podcast.videourl %>">
+                            <button type="submit" class="delete-btn">Delete Episode</button>
+                        </form>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <div class="empty-state">
+                    <h3>No podcasts yet</h3>
+                    <p>Click the "Add Podcast" button to upload your first episode.</p>
+                </div>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- Modal Form -->
+    <div class="modal-overlay" id="addModal">
+        <div class="modal">
+            <button class="close-btn" id="closeModalBtn">&times;</button>
+            <div class="modal-header">
+                <h2>New Episode</h2>
+                <p style="color: #64748b; font-size: 0.9rem;">Date will be set automatically.</p>
+            </div>
+            <form action="/addpodcast" method="POST">
+                <div class="form-group">
+                    <label for="videourl">Video URL (YouTube)</label>
+                    <input type="url" id="videourl" name="videourl" class="form-control" placeholder="https://youtube.com/..." required>
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Category (STEM)</label>
+                    <select id="category" name="category" class="form-control" required>
+                        <option value="" disabled selected>Select a category</option>
+                        <option value="science">Science</option>
+                        <option value="technology">Technology</option>
+                        <option value="engineering">Engineering</option>
+                        <option value="mathematics">Mathematics</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" class="form-control" placeholder="What is this podcast about?" required></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">Publish Podcast</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const openBtn = document.getElementById('openModalBtn');
+        const closeBtn = document.getElementById('closeModalBtn');
+        const modal = document.getElementById('addModal');
+
+        openBtn.addEventListener('click', () => { modal.classList.add('active'); });
+        closeBtn.addEventListener('click', () => { modal.classList.remove('active'); });
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.classList.remove('active');
+        });
+    </script>
+</body>
+</html>
