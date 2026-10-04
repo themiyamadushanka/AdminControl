@@ -1,6 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const conn = require('./database');
+const {setData,getData,delData} = require('./cache');
+
+
+
+
 
 router.post('/addpodcast', (req, res) => {
     const { videourl, description, category } = req.body;
@@ -12,6 +17,7 @@ router.post('/addpodcast', (req, res) => {
             res.status(500).send({ messege: 'error' });
         }
         else {
+            delData("podcast");
             res.redirect('/showpodcast');
         }
     });
@@ -26,16 +32,23 @@ router.post('/deletepodcast', (req, res) => {
             console.log(err);
             return res.status(500).send({ messege: 'failed' });
         }
+        delData("podcast");
         res.redirect('/showpodcast');
     });
 });
 router.get('/fetchpodcastall',(req,res)=>{
+    const cachedData = getData("podcast");
+    if (cachedData) {
+        return res.json({ result: cachedData });
+    }
+    
     const sql = "SELECT * FROM podcast ORDER BY date DESC";
     conn.query(sql, (err, result) => {
         if (err) {
             res.status(500).send({ messege: "error" });
         }
-         res.json({ result: result });
+        setData("podcast",result);
+        res.json({ result: result });
     })
 });
 
@@ -45,6 +58,7 @@ router.get('/showpodcast', (req, res) => {
         if (err) {
             res.status(500).send({ messege: "error" });
         }
+        setData("podcast",result);
         res.render('podcast', { podcasts: result });
     })
 })
