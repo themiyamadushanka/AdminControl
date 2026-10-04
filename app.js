@@ -6,11 +6,11 @@ const fileHndle = require('./imagehandle.js');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 const {setData,getData,delData} = require('./cache');
-app.use(cors(/*{
-    origin: 'https://omixelo.com',
+app.use(cors({
+    origin: ['https://omixelo.com', 'http://localhost:5300', 'http://127.0.0.1:5300'],
     credentials: true
-}*/));
-const port = 5300;
+}));
+const port = process.env.PORT || 5300;
 const conn = require('./database.js');
 app.set('view engine', 'ejs');
 
@@ -106,5 +106,5 @@ app.post('/adds/delete/:id', (req, res) => {
 
 
 app.listen(port, () => {
-  console.log(`Server is running on${port}`);
+  console.log(`Server is running on port ${port}`);
 });
