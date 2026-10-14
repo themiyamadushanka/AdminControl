@@ -24,8 +24,9 @@ async function uploadImageToImgBB(fileBuffer) {
             formData
         );
         
-        // Return the image URL from the response
-        return response.data.data.url;
+        const url = response.data.data.url;
+        const encordedUrl = `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=600&output=webp&q=75`;
+        return encordedUrl;
 
     } catch (error) {
         console.error('Upload failed:', error.message);
